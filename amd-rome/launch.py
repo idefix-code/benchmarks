@@ -10,9 +10,9 @@ minCores=1
 maxCores=131072
 
 #elementary 1D dimension
-problemSize=32
+problemSize=16
 
-# coreperNode on the cluster we're running
+# coreperNode (actually, threads per core...)
 coresPerNode=4
 
 #setup directory
@@ -90,8 +90,8 @@ for ncores in coreList:
         
         
     scriptOptions={}
-    scriptOptions['nodes']="%d"%(nodes)
-    scriptOptions['core']="%d"%(ncores)
+    scriptOptions['nodes']="%d"%(nodes)  # here nodes=MPI procs
+    scriptOptions['core']="%d"%(cores)   # here cores=OPENMP Threads
     scriptOptions['name']="benchmark-%d"%(ncores)
     
     # inifile substitution
