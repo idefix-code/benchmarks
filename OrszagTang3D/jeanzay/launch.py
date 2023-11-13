@@ -29,7 +29,7 @@ for ncores in coreList:
     os.mkdir(targetDir)
     copy2(setup+"/idefix",targetDir)
     copy2(setup+"/definitions.hpp",targetDir)
-    
+
     # compute number of cores and node
     nodes=ncores//coresPerNode
     if nodes<1:
@@ -39,31 +39,31 @@ for ncores in coreList:
         cores=coresPerNode
 
     print("%d nodes and %d cores"%(nodes,cores))
-    
+
     # compute problem total resolution
     nx1=problemSize
     nx2=problemSize
     nx3=problemSize
-    
+
     nproc1=1
     nproc2=1
     nproc3=1
-    
+
     n2=int(np.log2(ncores))
     n2_3=n2//3
     mod = n2-n2_3*3
-    
+
     nproc1=nproc1*2**(n2_3)
     nproc2=nproc2*2**(n2_3)
     nproc3=nproc3*2**(n2_3)
-    
+
     if(mod>=1):
         nproc1=nproc1*2
     if(mod>=2):
         nproc2=nproc2*2
-        
+
     print("nprocx1=%d, nprocx2=%d, nprocx3=%d"%(nproc1,nproc2,nproc3))
-    
+
     inputOptions={}
     inputOptions['resx1']="%d"%(nproc1*problemSize)
     inputOptions['resx2']="%d"%(nproc2*problemSize)
@@ -71,7 +71,7 @@ for ncores in coreList:
     inputOptions['lx1']="%f"%(nproc1*1.0)
     inputOptions['lx2']="%f"%(nproc2*1.0)
     inputOptions['lx3']="%f"%(nproc3*1.0)
-    
+
     # inifile substitution
     with open(setup+"/idefix.ini", 'r') as file:
         inifile = file.read()
@@ -81,13 +81,13 @@ for ncores in coreList:
 
     with open(targetDir+"/idefix.ini",'w') as file:
         file.write(inifile)
-        
-        
+
+
     scriptOptions={}
     scriptOptions['nodes']="%d"%(nodes)
     scriptOptions['core']="%d"%(cores)
     scriptOptions['name']="benchmark-%d"%(ncores)
-    
+
     # inifile substitution
     with open(setup+"/script.slurm", 'r') as file:
         scriptfile = file.read()
@@ -97,14 +97,9 @@ for ncores in coreList:
 
     with open(targetDir+"/script.slurm",'w') as file:
         file.write(scriptfile)
-    
+
     os.chmod(targetDir+"/script.slurm",stat.S_IRWXU)
 
     os.chdir(targetDir)
     os.system('sbatch ./script.slurm')
     os.chdir("..")
-    
-    
-    
-
-
