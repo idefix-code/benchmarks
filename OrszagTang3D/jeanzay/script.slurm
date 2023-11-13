@@ -10,10 +10,10 @@
 #SBATCH --time=00:10:00             # temps maximum d'execution demande (HH:MM:SS)
 #SBATCH --output=idefix%j.out     # nom du fichier de sortie
 #SBATCH --error=idefix-error%j.out      # nom du fichier d'erreur (ici commun avec la sortie)
- 
+
 # nettoyage des modules charges en interactif et herites par defaut
 module purge
- 
+
 # chargement des modules
 module load cuda/11.2
 module load gcc/8.3.1
@@ -29,7 +29,7 @@ set -x
 # execution du code
 #export TMPDIR=$JOBSCRATCH
 #ln -s $JOBSCRATCH /tmp/nvidia
- 
- 
+
+
 # execution du code
 srun /gpfslocalsup/pub/idrtools/bind_hfi.sh ./idefix -autotune --kokkos-num-devices=@core@
