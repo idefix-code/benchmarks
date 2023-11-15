@@ -30,7 +30,7 @@ def get_idefix_branch():
 
 
 def get_machine_label() -> str:
-    file = Path(__file__).parents[2] / "machine_label.txt"
+    file = Path(__file__).parents[3] / "machine_label.txt"
     if file.is_file():
         try:
             return file.read_text().strip()
