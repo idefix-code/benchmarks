@@ -42,7 +42,7 @@ $ python -m pip install ../requirements.txt
 
 Run all tests as
 ```shell
-python run_all.py
+python test_all.py
 ```
 
 Finally, produce the result plot with
