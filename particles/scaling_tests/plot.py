@@ -171,7 +171,7 @@ def main(argv: list[str] | None = None) -> int:
         machine_suffix = f"_{label}"
     else:
         machine_suffix = ""
-    sfile = f"weakscaling{machine_suffix}_{get_idefix_version_sha()}.png"
+    sfile = f"weakscaling{machine_suffix}_{get_idefix_version_sha()}.pdf"
     print(f"saving to {sfile}")
     fig.savefig(sfile)
 
