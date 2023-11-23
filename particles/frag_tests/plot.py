@@ -96,6 +96,6 @@ if label := get_machine_label():
     machine_suffix = f"_{label}"
 else:
     machine_suffix = ""
-sfile = f"perfs{machine_suffix}_{get_idefix_version_sha()}.png"
+sfile = f"perfs{machine_suffix}_{get_idefix_version_sha()}.pdf"
 print(f"saving to {sfile}")
 fig.savefig(sfile)
