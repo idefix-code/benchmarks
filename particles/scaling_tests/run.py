@@ -36,6 +36,7 @@ def submit(
     particles_per_cell: int,
     output_dir: Path,
     job_template: str | None,
+    runtime_flags: list[str],
 ) -> None:
     """
     Run ONE simulation. This is meant to be looped over.
@@ -123,6 +124,7 @@ def submit(
             "./idefix",
             "-dec",
             *decomposition,
+            *runtime_flags,
         ]
     else:
         if job_template == "jean-zay_v100.slurm":
@@ -142,6 +144,7 @@ def submit(
             "n_nodes": n_nodes,
             "ntasks_per_node": ntasks_per_node,
             "decomposition": " ".join(decomposition),
+            "runtime_flags": runtime_flags,
         }
         with open(HERE / "job_templates" / job_template) as fr:
             body = fr.read()
@@ -233,6 +236,7 @@ def main(argv: list[str] | None = None) -> int:
             run(["idfx", "conf", *options["conf_flags"]], check=True)
             run(["make", *options.get("make_flags", ["-j8"])], check=True)
 
+    runtime_flags = options.get("runtime_flags", [])
     for size, nproc, ppc in itt.product(sizes, nprocs, ppcs):
         submit(
             problem_size=size,
@@ -240,6 +244,7 @@ def main(argv: list[str] | None = None) -> int:
             particles_per_cell=ppc,
             output_dir=args.output_dir,
             job_template=options.get("job_template", [None])[0],
+            runtime_flags=runtime_flags,
         )
 
     # copy the configuration file so we don't need to input it again in following steps
