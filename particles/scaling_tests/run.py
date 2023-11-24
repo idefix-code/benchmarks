@@ -18,7 +18,13 @@ else:
 HERE = Path(__file__).parent
 BASE_SETUP_PATH = HERE.joinpath("base_setup").resolve()
 
-SAMPLE_CONF = iniformat("size_range 8 32\n" "nproc_range 1 4\n" "conf_flags -mpi -gpu")
+SAMPLE_CONF = iniformat(
+    (
+        "size_range 8 32\n"
+        "nproc_range 1 4\n"
+        "conf_flags -mpi -gpu"
+    )
+)
 
 
 def is_power_of_two(n) -> bool:
