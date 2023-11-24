@@ -25,4 +25,4 @@ module load cmake/3.18.0
 export TMPDIR=$JOBSCRATCH
 ln -s $JOBSCRATCH /tmp/nvidia
 
-srun ./idefix -dec {decomposition}
+srun ./idefix -dec {decomposition} {runtime_flags}
