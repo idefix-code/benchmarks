@@ -150,7 +150,7 @@ def submit(
             "n_nodes": n_nodes,
             "ntasks_per_node": ntasks_per_node,
             "decomposition": " ".join(decomposition),
-            "runtime_flags": runtime_flags,
+            "runtime_flags": " ".join(runtime_flags),
         }
         with open(HERE / "job_templates" / job_template) as fr:
             body = fr.read()
