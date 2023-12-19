@@ -9,11 +9,22 @@ Setup::Setup(Input &input, Grid &grid, DataBlock &data, Output &output) {
   haveParticles = input.Get<bool>("Setup", "haveParticles", 0);
   if(!haveParticles) return;
 
-  PM = input.Get<real>("Setup", "mass", 0);
   if(input.Get<std::string>("Particles", "count", 0).compare("per_cell")!=0) {
     IDEFIX_ERROR("this setup requires initial particle count to use 'per_cell' mode");
   }
+
   perCell = input.Get<int>("Particles", "count", 1);
+
+  // compute particle mass
+  real totalGasMass = 0.22104853207207678; // fragile, should be computed
+  auto nx1 = input.Get<int>("Grid", "X1-grid", 2);
+  auto nx2 = input.Get<int>("Grid", "X2-grid", 2);
+  auto nx3 = input.Get<int>("Grid", "X3-grid", 2);
+  // we assume that the grid is purely uniform in res and that the box size is 1^3
+  real cellMass = totalGasMass / nx1 / nx2 / nx3;
+  auto ratio = input.Get<real>("Setup", "particles_to_gas_mass_ratio", 0);
+
+  PM = cellMass * ratio / perCell;
 }
 
 
@@ -46,6 +57,7 @@ void Setup::InitFlow(DataBlock &data) {
     }
 
     if(haveParticles) {
+      idfx::cout << "individual particle mass is " << PM << std::endl;
       // randomized initial positions and velocities
       for(int k = 0; k < d.PactiveCount; k++) {
         d.Ps(PX1,k) = d.xbeg[IDIR] + idfx::randm() * (d.xend[IDIR] - d.xbeg[IDIR]);
