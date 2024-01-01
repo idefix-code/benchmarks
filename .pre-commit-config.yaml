@@ -15,7 +15,7 @@ repos:
   - id: check-executables-have-shebangs
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.1.5
+  rev: v0.1.9
   hooks:
   - id: ruff
     args: [--fix]
@@ -26,7 +26,7 @@ repos:
   - id: inifix-format
 
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.11.0
+  rev: v2.12.0
   hooks:
   - id: pretty-format-yaml
     args: [--autofix, --indent, '2']
