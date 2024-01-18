@@ -10,7 +10,7 @@ Each simulation is run in 2 flavours: with 8 particles per cell and without part
 ## Requirements
 Install requirements as
 ```shell
-$ python -m pip install ../requirements.txt
+$ python -m pip install -r ../requirements.txt
 ```
 
 ## Usage
