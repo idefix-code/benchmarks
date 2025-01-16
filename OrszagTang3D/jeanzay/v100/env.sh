@@ -10,4 +10,4 @@ module load cmake/3.18.0
 module load paraview/5.9.1
 module load python
 
-export IDEFIX_FLAGS=-DKokkos_ENABLE_CUDA=ON -DKokkos_ARCH_VOLTA70=ON -DIdefix_MPI=ON
+export IDEFIX_FLAGS="-DKokkos_ENABLE_CUDA=ON -DKokkos_ARCH_VOLTA70=ON -DIdefix_MPI=ON"
