@@ -4,16 +4,27 @@ from shutil import rmtree
 import os
 import re
 import stat
+import argparse
+
+parser = argparse.ArgumentParser(
+    prog="launch.py",
+    description="Le programme de lancement des benchmarks Idefix"
+)
+parser.add_argument('--max-cores', type=int)
+parser.add_argument('--cores-per-node', type=int)
+parser.add_argument('--problem-size', type=int)
+parser.add_argument('--account', type=str)
+args = parser.parse_args()
 
 # Number of cores which we want to explore
 minCores=1
-maxCores=128
+maxCores=args.max_cores
 
 #elementary 1D dimension
-problemSize=128
+problemSize=args.problem_size
 
 # coreperNode on the cluster we're running
-coresPerNode=8
+coresPerNode=args.cores_per_node
 
 #setup directory
 setup="./setup"
@@ -87,6 +98,7 @@ for ncores in coreList:
     scriptOptions['nodes']="%d"%(nodes)
     scriptOptions['core']="%d"%(cores)
     scriptOptions['name']="benchmark-%d"%(ncores)
+    scriptOptions['account']=args.account
 
     # inifile substitution
     with open(setup+"/script.slurm", 'r') as file:

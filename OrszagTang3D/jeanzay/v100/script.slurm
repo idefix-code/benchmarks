@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -A een@v100
+#SBATCH -A @account@@v100
 #SBATCH --job-name=idefixIdeal     # nom du job
 #SBATCH --nodes=@nodes@                   # nombre de noeuds
 #SBATCH --ntasks-per-node=@core@         # nombre de tache MPI par noeud  (=nb de GPU)

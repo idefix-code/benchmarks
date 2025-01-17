@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -A een@h100
+#SBATCH -A @account@@h100
 #SBATCH -C h100
 #SBATCH --job-name=idefixIdeal     # nom du job
 #SBATCH --nodes=@nodes@                   # nombre de noeuds
