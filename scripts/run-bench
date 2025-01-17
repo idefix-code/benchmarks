@@ -106,7 +106,7 @@ case "$action" in
             cd "$RUN_DIR"
             cp "$ROOT_DIR/scripts/launch.py" .
             ln -s "$BUILD_DIR" setup
-            declare -p idefix_commit bench_commit gpumodel > "commit-info"
+            declare -p idefix_commit problem_size gpumodel > "commit-info"
             
             python launch.py --max-cores "$max_cores" --account "$account" --cores-per-node "$cores_per_node" --problem-size "$problem_size"
         )
