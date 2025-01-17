@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+set -ue
+ROOT_DIR="$PWD"
+
+idefix_tag=
+bench_tag=
+gpumodel=
+max_cores=
+
+CMAKE_ARGS=( )
+
+function show_help() {
+    cat >&2 <<EOF
+Usage: $0 run --gpu \$GPU --idefix-tag \$IDEFIX_TAG --bench-tag \$BENCH_TAG --max-cores \$MAX_CORES
+       $0 collect
+
+Runs the Idefix benchmarks for given commits
+EOF
+}
+
+function set_gpu_vars() {
+    gpumodel="$1"
+    case "$gpumodel" in
+        v100|a100|h100)
+            :
+            ;;
+        *)
+            printf "Unrecognized GPU model (must be one of v100, a100 or h100)\n" >&2
+            return 3
+            ;;
+    esac
+}
+
+# Parse les options de la ligne de commande
+action="$1"; shift
+
+while (($# > 0)); do
+    opt="$1"; shift
+    case "$opt" in
+        --max-cores)
+            max_cores="$1"; shift;;
+        --idefix-tag)
+            idefix_tag="$1"; shift;;
+        --bench-tag)
+            bench_tag="$1"; shift;;
+        --gpu)
+            set_gpu_vars "$1" || exit "$?"
+            shift;;
+        *)
+            printf "Unrecognized option '%s'\n" "$opt" >&2
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
+if [[ "$action" == "run" && ( -z "$idefix_tag" || -z "$bench_tag" || -z "$gpumodel" || -z "$max_cores" ) ]]; then
+    printf "Missing option or argument\n" >&2
+    show_help
+    exit 2
+fi
+
+case "$action" in
+    run)
+        bench_id="$gpumodel/$idefix_tag/$bench_tag"
+        bench_date="$(date +"%Y-%m-%d_%H:%M:%S")"
+        
+        IDEFIX_DIR="$ROOT_DIR/idefix/$idefix_tag"
+        BENCH_DIR="$ROOT_DIR/benchmarks/$bench_tag"
+        BENCH_ENV="$BENCH_DIR/OrszagTang3D/jeanzay/$gpumodel"
+        BUILD_DIR="$ROOT_DIR/build/$bench_id"
+        RUN_DIR="$ROOT_DIR/runs/$bench_date"
+        
+        mkdir -p "$ROOT_DIR"/{idefix,benchmarks,runs}
+        
+        # Récupération des commits
+        if [ ! -e "$IDEFIX_DIR" ]; then
+            git clone -b "$idefix_tag" --depth 1 --recurse-submodules https://github.com/idefix-code/idefix.git "$IDEFIX_DIR"
+        fi
+        if [ ! -e "$BENCH_DIR" ]; then
+            git clone -b "$bench_tag" --depth 1 https://github.com/idefix-code/benchmarks.git "$BENCH_DIR"
+        fi
+        
+        idefix_commit="$(cd "$IDEFIX_DIR"; git rev-parse HEAD)"
+        bench_commit="$(cd "$BENCH_DIR"; git rev-parse HEAD)"
+        
+        (
+            if [ ! -e "$BUILD_DIR" ]; then
+                (
+                    mkdir -p "$BUILD_DIR"
+                    cd "$BUILD_DIR"
+                    cp -r "$BENCH_DIR/OrszagTang3D/setup/"* .
+                    cp "$BENCH_ENV/script.slurm" .
+
+                    source "$BENCH_ENV/env.sh"
+
+                    cmake $IDEFIX_FLAGS "$IDEFIX_DIR"
+                    make -j2
+                )
+            fi
+
+            mkdir -p "$RUN_DIR"
+            cd "$RUN_DIR"
+            cp "$ROOT_DIR/launch.py" .
+            ln -s "$BUILD_DIR" setup
+            declare -p idefix_commit bench_commit gpumodel > "commit-info"
+            
+            python launch.py --max-cores "$max_cores"
+        )
+        ;;
+
+    collect)
+        (
+            function jq_script() {
+                cat <<EOF
+group_by([.date,.gpumodel,.idefix_commit,.bench_commit])
+  | map({
+       date: .[0].date,
+       gpumodel : .[0].gpumodel,
+       idefix_commit: .[0].idefix_commit,
+       bench_commit : .[0].bench_commit,
+       results: map({nbgpu, cell_updates}) | sort_by(.nbgpu)
+    })
+  | sort_by(.date)
+EOF
+            }
+            
+            cd "$ROOT_DIR/runs"
+            for run_info in */commit-info; do
+                source "$run_info"
+                run="${run_info%/commit-info}"
+                # declare -p idefix_commit expected_idefix_commit bench_commit expected_bench_commit
+                grep -H "cell updates/second" "$run/"*"/idefix.0.log" | while read perf_line; do
+                    date="${perf_line%%/*}"
+                    perf_line="${perf_line#$date/}"
+                    nbgpu="${perf_line%%/*}"
+                    perf_line="${perf_line#$nbgpu/}"
+                    cell_updates="${perf_line%' cell updates'*}"
+                    cell_updates="${cell_updates#*' are '}"
+                    printf '{ "idefix_commit": "%s", "bench_commit": "%s", "date": "%s", "gpumodel": "%s", "nbgpu": %d, "cell_updates": %s }\n' \
+                           "$idefix_commit" "$bench_commit" "$date" "$gpumodel" "$nbgpu" "$cell_updates"
+                done
+            done | {
+                module load jq
+                jq -s "$(jq_script)"
+            }
+        )
+        ;;
+esac
