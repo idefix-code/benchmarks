@@ -59,7 +59,7 @@ while (($# > 0)); do
 done
 
 if [[ \
-       "$action" == "run" && ( -z "$idefix_tag" || -z "$gpumodel" || -z "$max_cores" | -z "$account" ) \
+       ( "$action" == "run" && ( -z "$idefix_tag" || -z "$gpumodel" || -z "$max_cores" || -z "$account" ) ) \
            || ("$action" != "run" && "$action" != "collect") \
    ]]; then
     printf "Missing option or argument\n" >&2
