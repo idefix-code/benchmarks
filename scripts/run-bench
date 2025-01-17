@@ -86,6 +86,7 @@ case "$action" in
         fi
         
         idefix_commit="$(cd "$IDEFIX_DIR"; git rev-parse HEAD)"
+        bench_commit="$(cd "$BENCH_DIR"; git rev-parse HEAD)"
         
         (
             if [ ! -e "$BUILD_DIR" ]; then
@@ -106,7 +107,7 @@ case "$action" in
             cd "$RUN_DIR"
             cp "$ROOT_DIR/scripts/launch.py" .
             ln -s "$BUILD_DIR" setup
-            declare -p idefix_commit problem_size gpumodel > "commit-info"
+            declare -p idefix_commit problem_size bench_commit gpumodel > "commit-info"
             
             python launch.py --max-cores "$max_cores" --account "$account" --cores-per-node "$cores_per_node" --problem-size "$problem_size"
         )
@@ -140,8 +141,8 @@ EOF
                     perf_line="${perf_line#$nbgpu/}"
                     cell_updates="${perf_line%' cell updates'*}"
                     cell_updates="${cell_updates#*' are '}"
-                    printf '{ "idefix_commit": "%s", "date": "%s", "gpumodel": "%s", "nbgpu": %d, "cell_updates": %s }\n' \
-                           "$idefix_commit" "$date" "$gpumodel" "$nbgpu" "$cell_updates"
+                    printf '{ "idefix_commit": "%s", "bench_commit": "%s", "date": "%s", "gpumodel": "%s", "nbgpu": %d, "cell_updates": %s }\n' \
+                           "$idefix_commit" "$bench_commit" "$date" "$gpumodel" "$nbgpu" "$cell_updates"
                 done
             done | {
                 module load jq
