@@ -1,10 +1,10 @@
-import numpy as np
 from shutil import copy2
 from shutil import rmtree
 import os
 import re
 import stat
 import argparse
+import math
 
 parser = argparse.ArgumentParser(
     prog="launch.py",
@@ -30,7 +30,7 @@ coresPerNode=args.cores_per_node
 setup="./setup"
 
 #set number of cores
-coreList=(2**(np.arange(np.log2(minCores),np.log2(maxCores)+1))).astype(int)
+coreList=(int(2**i) for i in range(int(math.log2(minCores)), int(math.log2(maxCores)+0.5)+1))
 
 for ncores in coreList:
     targetDir="%d"%ncores
@@ -60,7 +60,7 @@ for ncores in coreList:
     nproc2=1
     nproc3=1
 
-    n2=int(np.log2(ncores))
+    n2=int(math.log2(ncores))
     n2_3=n2//3
     mod = n2-n2_3*3
 

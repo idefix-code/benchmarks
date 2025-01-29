@@ -123,7 +123,7 @@ case "$action" in
             cp "$ROOT_DIR/scripts/launch.py" .
             ln -s "$BUILD_DIR" setup
             declare -p idefix_commit problem_size bench_commit gpumodel > "commit-info"
-            module load python numpy
+            module load python
             
             python launch.py --max-cores "$max_cores" --account "$account" --cores-per-node "$cores_per_node" --problem-size "$problem_size"
         )
