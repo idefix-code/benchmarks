@@ -82,12 +82,14 @@ if [[ \
     exit 2
 fi
 
-if [ "$HOST" == jean-zay ]; then
+if [ "$HOST" == jeanzay ]; then
     function load_jq() {
         module load jq
     }
 else
-    function load_jq() { ; }
+    function load_jq() {
+        : # do nothing
+    }
 fi
     
 case "$action" in
