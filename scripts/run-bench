@@ -82,6 +82,14 @@ if [[ \
     exit 2
 fi
 
+if [ "$HOST" == jean-zay ]; then
+    function load_jq() {
+        module load jq
+    }
+else
+    function load_jq() { ; }
+fi
+    
 case "$action" in
     run)
         bench_id="$gpumodel/$idefix_tag"
@@ -161,7 +169,7 @@ EOF
                            "$idefix_commit" "$bench_commit" "$date" "$gpumodel" "$nbgpu" "$cell_updates"
                 done
             done | {
-                module load jq
+                load_jq
                 jq -s "$(jq_script)"
             }
         )
