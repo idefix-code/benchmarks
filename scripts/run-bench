@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -ue
-ROOT_DIR="$(dirname "$0")/.."
+ROOT_DIR="$(realpath "$(dirname "$0")")/.."
 
 idefix_tag=
 bench_tag=
