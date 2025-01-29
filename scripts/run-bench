@@ -34,7 +34,7 @@ function set_gpu_vars() {
 }
 
 # Parse les options de la ligne de commande
-if (($# < 1)); then
+if (($# >= 1)); then
     action="$1"; shift
 else
     printf "Error: you must specify an action\n" >&2
