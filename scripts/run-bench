@@ -11,6 +11,14 @@ problem_size=128
 
 CMAKE_ARGS=( )
 
+case "$(hostname -f)" in
+    *jean-zay*) HOST=jeanzay;;
+    *adastra*)  HOST=adastra;;
+    *)
+        printf "Host not recognized. $0 can only run on Jean-Zay or Adastra\n" >&2
+        exit 1;;
+esac
+
 function show_help() {
     cat >&2 <<EOF
 Usage: $0 run --account \$ACCOUNT --gpu \$GPU --idefix-tag \$IDEFIX_TAG --max-cores \$MAX_CORES [--problem-size \$PROBLEM_SIZE]
@@ -23,11 +31,12 @@ EOF
 function set_gpu_vars() {
     gpumodel="$1"
     case "$gpumodel" in
-        v100) cores_per_node=4;;
-        a100) cores_per_node=8;;
-        h100) cores_per_node=4;;
+        v100)   cores_per_node=4;;
+        a100)   cores_per_node=8;;
+        h100)   cores_per_node=4;;
+        mi250x) cores_per_node=2;;
         *)
-            printf "Unrecognized GPU model (must be one of v100, a100 or h100)\n" >&2
+            printf "Unrecognized GPU model (must be one of v100, a100, h100, or mi250x)\n" >&2
             return 3
             ;;
     esac
@@ -80,7 +89,7 @@ case "$action" in
         
         IDEFIX_DIR="$ROOT_DIR/idefix/$idefix_tag"
         BENCH_DIR="$ROOT_DIR"
-        BENCH_ENV="$BENCH_DIR/OrszagTang3D/jeanzay/$gpumodel"
+        BENCH_ENV="$BENCH_DIR/OrszagTang3D/$HOST/$gpumodel"
         BUILD_DIR="$ROOT_DIR/build/$bench_id"
         RUN_DIR="$ROOT_DIR/runs/$bench_date"
         
