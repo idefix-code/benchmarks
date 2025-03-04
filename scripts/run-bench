@@ -131,6 +131,9 @@ case "$action" in
             mkdir -p "$RUN_DIR"
             cd "$RUN_DIR"
             cp "$ROOT_DIR/scripts/launch.py" .
+            if [ -e "$ROOT_DIR/scripts/bind.sh" ]
+               then cp "$ROOT_DIR/scripts/bind.sh" .
+            fi
             ln -s "$BUILD_DIR" setup
             declare -p idefix_commit problem_size bench_commit gpumodel > "commit-info"
             module load python
