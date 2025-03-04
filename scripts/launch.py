@@ -40,6 +40,11 @@ for ncores in coreList:
     os.mkdir(targetDir)
     copy2(setup+"/idefix",targetDir)
     copy2(setup+"/definitions.hpp",targetDir)
+    try:
+        copy2(setup+"/bind.sh",targetDir)
+    except:
+        ## No binding, we do nothing
+        pass
 
     # compute number of cores and node
     nodes=ncores//coresPerNode

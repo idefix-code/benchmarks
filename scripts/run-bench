@@ -91,53 +91,67 @@ else
         : # do nothing
     }
 fi
-    
+
 case "$action" in
     run)
+        echo "***** Starting run action..."
         bench_id="$gpumodel/$idefix_tag"
         bench_date="$(date +"%Y-%m-%d_%H:%M:%S")"
-        
-        IDEFIX_DIR="$ROOT_DIR/idefix/$idefix_tag"
+
+        IDEFIX_DIR="$ROOT_DIR/idefix/"
         BENCH_DIR="$ROOT_DIR"
         BENCH_ENV="$BENCH_DIR/OrszagTang3D/$HOST/$gpumodel"
-        BUILD_DIR="$ROOT_DIR/build/$bench_id"
         RUN_DIR="$ROOT_DIR/runs/$bench_date"
-        
-        mkdir -p "$ROOT_DIR"/{idefix,runs}
-        
+
+        mkdir -p "$ROOT_DIR/runs"
+
         # Récupération des commits
         if [ ! -e "$IDEFIX_DIR" ]; then
+            echo "***** Cloning..."
             git clone -b "$idefix_tag" --depth 1 --recurse-submodules https://github.com/idefix-code/idefix.git "$IDEFIX_DIR"
+        else
+            # Refresh repo in case something has changed
+            echo "***** Pulling latest version..."
+            cd $IDEFIX_DIR
+            git pull
+            git checkout "$idefix_tag"
+            git submodule update --init
+            cd $ROOT_DIR
         fi
-        
+
         idefix_commit="$(cd "$IDEFIX_DIR"; git rev-parse HEAD)"
         bench_commit="$(cd "$BENCH_DIR"; git rev-parse HEAD)"
-        
+
+        bench_id="$gpumodel/$idefix_commit"
+        BUILD_DIR="$ROOT_DIR/build/$bench_id"
+
         (
             if [ ! -e "$BUILD_DIR" ]; then
                 (
+                    echo "***** Building..."
                     mkdir -p "$BUILD_DIR"
                     cd "$BUILD_DIR"
                     cp -r "$BENCH_DIR/OrszagTang3D/setup/"* .
                     cp "$BENCH_ENV/script.slurm" .
-
+                    if [ -e "$BENCH_ENV/bind.sh" ]; then
+                		  cp "$BENCH_ENV/bind.sh" .
+              	    fi
                     source "$BENCH_ENV/env.sh"
 
                     cmake $IDEFIX_FLAGS "$IDEFIX_DIR"
                     make -j2
                 )
+            else
+              echo "***** Building not needed."
             fi
 
             mkdir -p "$RUN_DIR"
             cd "$RUN_DIR"
             cp "$ROOT_DIR/scripts/launch.py" .
-            if [ -e "$ROOT_DIR/scripts/bind.sh" ]
-               then cp "$ROOT_DIR/scripts/bind.sh" .
-            fi
             ln -s "$BUILD_DIR" setup
             declare -p idefix_commit problem_size bench_commit gpumodel > "commit-info"
             module load python
-            
+
             python launch.py --max-cores "$max_cores" --account "$account" --cores-per-node "$cores_per_node" --problem-size "$problem_size"
         )
         ;;
@@ -157,7 +171,7 @@ group_by([.date,.gpumodel,.idefix_commit,.bench_commit])
   | sort_by(.date)
 EOF
             }
-            
+
             cd "$ROOT_DIR/runs"
             for run_info in */commit-info; do
                 source "$run_info"
