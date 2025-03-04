@@ -34,7 +34,7 @@ function set_gpu_vars() {
         v100)   cores_per_node=4;;
         a100)   cores_per_node=8;;
         h100)   cores_per_node=4;;
-        mi250x) cores_per_node=2;;
+        mi250x) cores_per_node=8;;
         *)
             printf "Unrecognized GPU model (must be one of v100, a100, h100, or mi250x)\n" >&2
             return 3
