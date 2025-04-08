@@ -1,5 +1,3 @@
-#!/bin/bash
-
 module purge
 
 module load cuda/12.1.0
