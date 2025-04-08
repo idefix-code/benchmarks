@@ -71,23 +71,23 @@ case "$action" in
     run)
         bench_id="$gpumodel/$idefix_tag"
         bench_date="$(date +"%Y-%m-%d_%H:%M:%S")"
-        
+
         IDEFIX_DIR="$ROOT_DIR/idefix/$idefix_tag"
         BENCH_DIR="$ROOT_DIR"
         BENCH_ENV="$BENCH_DIR/OrszagTang3D/jeanzay/$gpumodel"
         BUILD_DIR="$ROOT_DIR/build/$bench_id"
         RUN_DIR="$ROOT_DIR/runs/$bench_date"
-        
+
         mkdir -p "$ROOT_DIR"/{idefix,runs}
-        
+
         # Récupération des commits
         if [ ! -e "$IDEFIX_DIR" ]; then
             git clone -b "$idefix_tag" --depth 1 --recurse-submodules https://github.com/idefix-code/idefix.git "$IDEFIX_DIR"
         fi
-        
+
         idefix_commit="$(cd "$IDEFIX_DIR"; git rev-parse HEAD)"
         bench_commit="$(cd "$BENCH_DIR"; git rev-parse HEAD)"
-        
+
         (
             if [ ! -e "$BUILD_DIR" ]; then
                 (
@@ -108,7 +108,7 @@ case "$action" in
             cp "$ROOT_DIR/scripts/launch.py" .
             ln -s "$BUILD_DIR" setup
             declare -p idefix_commit problem_size bench_commit gpumodel > "commit-info"
-            
+
             python launch.py --max-cores "$max_cores" --account "$account" --cores-per-node "$cores_per_node" --problem-size "$problem_size"
         )
         ;;
@@ -128,7 +128,7 @@ group_by([.date,.gpumodel,.idefix_commit,.bench_commit])
   | sort_by(.date)
 EOF
             }
-            
+
             cd "$ROOT_DIR/runs"
             for run_info in */commit-info; do
                 source "$run_info"

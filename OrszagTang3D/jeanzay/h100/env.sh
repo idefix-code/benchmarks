@@ -1,5 +1,3 @@
-#!/bin/bash
-
 module purge
 
 module load arch/h100
