@@ -15,6 +15,7 @@ parser.add_argument('--max-cores', type=int)
 parser.add_argument('--cores-per-node', type=int)
 parser.add_argument('--problem-size', type=int)
 parser.add_argument('--account', type=str)
+parser.add_argument('--cluster', type=str)
 parser.add_argument('--build-directory', type=str, default='../OrszagTang3D/setup')
 parser.add_argument('--run-directory', type=str, default='../runs')
 args = parser.parse_args()
@@ -32,6 +33,10 @@ coresPerNode=args.cores_per_node
 #setup directory
 setup=args.build_directory
 
+#directory of the cluster we use
+clusters_path = os.path.realpath(__file__)+"/../clusters/"
+cluster = clusters_path + args.cluster
+
 #set number of cores
 coreList=(int(2**i) for i in range(int(math.log2(minCores)), int(math.log2(maxCores)+0.5)+1))
 
@@ -46,7 +51,7 @@ for ncores in coreList:
     copy2(setup+"/idefix",targetDir)
     copy2(setup+"/definitions.hpp",targetDir)
     try:
-        copy2(setup+"/bind.sh",targetDir)
+        copy2(cluster+"/bind.sh",targetDir)
     except:
         ## No binding, we do nothing
         pass
@@ -111,7 +116,7 @@ for ncores in coreList:
     scriptOptions['account']=args.account
 
     # inifile substitution
-    with open(setup+"/script.slurm", 'r') as file:
+    with open(cluster+"/script.slurm", 'r') as file:
         scriptfile = file.read()
 
     for key, val in scriptOptions.items():
