@@ -1,10 +1,11 @@
 #!/bin/bash
-#SBATCH -A @account@@v100
+#SBATCH -A @account@
+#SBATCH --constraint=MI250
 #SBATCH --job-name=idefixIdeal     # nom du job
 #SBATCH --nodes=@nodes@                   # nombre de noeuds
 #SBATCH --ntasks-per-node=@core@         # nombre de tache MPI par noeud  (=nb de GPU)
 #SBATCH --gres=gpu:@core@                # nombre de GPU par noeud
-#SBATCH --cpus-per-task=10          # nombre de coeurs CPU par tache (un quart du noeud ici)
+#SBATCH --cpus-per-task=8          # nombre de coeurs CPU par tache (un quart du noeud ici)
 # /!\ Attention, "multithread" fait reference à l'hyperthreading dans la terminologie Slurm
 #SBATCH --hint=nomultithread        # hyperthreading desactive
 #SBATCH --time=00:10:00             # temps maximum d'execution demande (HH:MM:SS)
@@ -15,11 +16,10 @@
 module purge
 
 # chargement des modules
-module load cuda/12.1.0
-module load gcc/12.2.0
-module load openmpi/4.1.1-cuda
-module load cmake/3.25.2
-
+module load cpe/24.07
+module load craype-accel-amd-gfx90a craype-x86-trento
+#module load PrgEnv-cray
+module load amd-mixed
 
 # echo des commandes lancees
 set -x
@@ -30,6 +30,6 @@ set -x
 #export TMPDIR=$JOBSCRATCH
 #ln -s $JOBSCRATCH /tmp/nvidia
 
-
 # execution du code
-srun ./bind.sh ./idefix
+
+srun --ntasks-per-node=@core@ --cpu-bind=none --mem-bind=none -- ./bind.sh ./idefix

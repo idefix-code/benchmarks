@@ -34,4 +34,4 @@ set -x
 
 
 # execution du code
-srun ./idefix
+srun ./bind.sh ./idefix

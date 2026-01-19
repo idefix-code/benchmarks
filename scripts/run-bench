@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -ue
-ROOT_DIR="$PWD"
+ROOT_DIR="$(realpath "$(dirname "$0")")/.."
 
 idefix_tag=
 bench_tag=
@@ -10,6 +10,14 @@ account=
 problem_size=128
 
 CMAKE_ARGS=( )
+
+case "$(hostname -f)" in
+    *jean-zay*) HOST=jeanzay;;
+    *adastra*)  HOST=adastra;;
+    *)
+        printf "Host not recognized. $0 can only run on Jean-Zay or Adastra\n" >&2
+        exit 1;;
+esac
 
 function show_help() {
     cat >&2 <<EOF
@@ -23,18 +31,25 @@ EOF
 function set_gpu_vars() {
     gpumodel="$1"
     case "$gpumodel" in
-        v100) cores_per_node=4;;
-        a100) cores_per_node=8;;
-        h100) cores_per_node=4;;
+        v100)   cores_per_node=4;;
+        a100)   cores_per_node=8;;
+        h100)   cores_per_node=4;;
+        mi250x) cores_per_node=8;;
         *)
-            printf "Unrecognized GPU model (must be one of v100, a100 or h100)\n" >&2
+            printf "Unrecognized GPU model (must be one of v100, a100, h100, or mi250x)\n" >&2
             return 3
             ;;
     esac
 }
 
 # Parse les options de la ligne de commande
-action="$1"; shift
+if (($# >= 1)); then
+    action="$1"; shift
+else
+    printf "Error: you must specify an action\n" >&2
+    show_help
+    exit
+fi
 
 while (($# > 0)); do
     opt="$1"; shift
@@ -67,22 +82,41 @@ if [[ \
     exit 2
 fi
 
+if [ "$HOST" == jeanzay ]; then
+    function load_jq() {
+        module load jq
+    }
+else
+    function load_jq() {
+        : # do nothing
+    }
+fi
+
 case "$action" in
     run)
+        echo "***** Starting run action..."
         bench_id="$gpumodel/$idefix_tag"
         bench_date="$(date +"%Y-%m-%d_%H:%M:%S")"
 
         IDEFIX_DIR="$ROOT_DIR/idefix/$idefix_tag"
         BENCH_DIR="$ROOT_DIR"
-        BENCH_ENV="$BENCH_DIR/OrszagTang3D/jeanzay/$gpumodel"
-        BUILD_DIR="$ROOT_DIR/build/$bench_id"
+        BENCH_ENV="$BENCH_DIR/OrszagTang3D/$HOST/$gpumodel"
         RUN_DIR="$ROOT_DIR/runs/$bench_date"
 
         mkdir -p "$ROOT_DIR"/{idefix,runs}
 
         # Récupération des commits
         if [ ! -e "$IDEFIX_DIR" ]; then
+            echo "***** Cloning..."
             git clone -b "$idefix_tag" --depth 1 --recurse-submodules https://github.com/idefix-code/idefix.git "$IDEFIX_DIR"
+        else
+            # Refresh repo in case something has changed
+            echo "***** Pulling latest version..."
+            cd $IDEFIX_DIR
+            git pull
+            git checkout "$idefix_tag"
+            git submodule update --init
+            cd $ROOT_DIR
         fi
 
         idefix_commit="$(cd "$IDEFIX_DIR"; git rev-parse HEAD)"
@@ -91,16 +125,21 @@ case "$action" in
         (
             if [ ! -e "$BUILD_DIR" ]; then
                 (
+                    echo "***** Building..."
                     mkdir -p "$BUILD_DIR"
                     cd "$BUILD_DIR"
                     cp -r "$BENCH_DIR/OrszagTang3D/setup/"* .
                     cp "$BENCH_ENV/script.slurm" .
-
+                    if [ -e "$BENCH_ENV/bind.sh" ]; then
+                		  cp "$BENCH_ENV/bind.sh" .
+              	    fi
                     source "$BENCH_ENV/env.sh"
 
                     cmake $IDEFIX_FLAGS "$IDEFIX_DIR"
                     make -j2
                 )
+            else
+              echo "***** Building not needed."
             fi
 
             mkdir -p "$RUN_DIR"
@@ -108,6 +147,7 @@ case "$action" in
             cp "$ROOT_DIR/scripts/launch.py" .
             ln -s "$BUILD_DIR" setup
             declare -p idefix_commit problem_size bench_commit gpumodel > "commit-info"
+            module load python
 
             python launch.py --max-cores "$max_cores" --account "$account" --cores-per-node "$cores_per_node" --problem-size "$problem_size"
         )
@@ -129,6 +169,7 @@ group_by([.date,.gpumodel,.idefix_commit,.bench_commit])
 EOF
             }
 
+
             cd "$ROOT_DIR/runs"
             for run_info in */commit-info; do
                 source "$run_info"
@@ -145,7 +186,7 @@ EOF
                            "$idefix_commit" "$bench_commit" "$date" "$gpumodel" "$nbgpu" "$cell_updates"
                 done
             done | {
-                module load jq
+                load_jq
                 jq -s "$(jq_script)"
             }
         )
