@@ -34,7 +34,7 @@ coresPerNode=args.cores_per_node
 setup=args.build_directory
 
 #directory of the cluster we use
-clusters_path = os.path.realpath(__file__)+"/../clusters/"
+clusters_path = os.path.dirname(__file__)+"/../clusters/"
 cluster = clusters_path + args.cluster
 
 #set number of cores
@@ -43,7 +43,6 @@ coreList=(int(2**i) for i in range(int(math.log2(minCores)), int(math.log2(maxCo
 for ncores in coreList:
     date = datetime.today().strftime('%Y-%m-%d')
     targetDir=args.run_directory+"/"+date+"/%d/%d"%(problemSize,ncores)
-    targetDir="%d"%ncores
     print("Doing %d cores setup"%ncores)
     if os.path.exists(targetDir):
         rmtree(targetDir)
