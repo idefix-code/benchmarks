@@ -5,5 +5,6 @@ module load craype-accel-amd-gfx90a craype-x86-trento
 module load PrgEnv-cray
 module load amd-mixed
 module load cray-python/3.11.7
+module load cmake
 
-export IDEFIX_FLAGS="-DKokkos_ENABLE_HIP=ON -DKokkos_ENABLE_HIP_MULTIPLE_KERNEL_INSTANTIATIONS=ON -DKokkos_ARCH_VEGA90A=ON"
+export IDEFIX_FLAGS="-DKokkos_ENABLE_HIP=ON -DKokkos_ENABLE_HIP_MULTIPLE_KERNEL_INSTANTIATIONS=ON -DKokkos_ARCH_VEGA90A=ON -DIdefix_MPI=ON"
