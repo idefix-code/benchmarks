@@ -5,6 +5,7 @@ import re
 import stat
 import argparse
 import math
+from datetime import datetime
 
 parser = argparse.ArgumentParser(
     prog="launch.py",
@@ -14,6 +15,8 @@ parser.add_argument('--max-cores', type=int)
 parser.add_argument('--cores-per-node', type=int)
 parser.add_argument('--problem-size', type=int)
 parser.add_argument('--account', type=str)
+parser.add_argument('--build-directory', type=str, default='../OrszagTang3D/setup')
+parser.add_argument('--run-directory', type=str, default='../runs')
 args = parser.parse_args()
 
 # Number of cores which we want to explore
@@ -27,17 +30,19 @@ problemSize=args.problem_size
 coresPerNode=args.cores_per_node
 
 #setup directory
-setup="./setup"
+setup=args.build_directory
 
 #set number of cores
 coreList=(int(2**i) for i in range(int(math.log2(minCores)), int(math.log2(maxCores)+0.5)+1))
 
 for ncores in coreList:
+    date = datetime.today().strftime('%Y-%m-%d')
+    targetDir=args.run_directory+"/"+date+"/%d/%d"%(problemSize,ncores)
     targetDir="%d"%ncores
     print("Doing %d cores setup"%ncores)
     if os.path.exists(targetDir):
         rmtree(targetDir)
-    os.mkdir(targetDir)
+    os.makedirs(targetDir)
     copy2(setup+"/idefix",targetDir)
     copy2(setup+"/definitions.hpp",targetDir)
     try:
@@ -116,7 +121,7 @@ for ncores in coreList:
         file.write(scriptfile)
 
     os.chmod(targetDir+"/script.slurm",stat.S_IRWXU)
-
+    cwd = os.getcwd()
     os.chdir(targetDir)
     os.system('sbatch ./script.slurm')
-    os.chdir("..")
+    os.chdir(cwd)
