@@ -7,4 +7,4 @@ module load amd-mixed
 module load cray-python/3.11.7
 module load cmake
 
-export IDEFIX_FLAGS="-DKokkos_ENABLE_HIP=ON -DKokkos_ENABLE_HIP_MULTIPLE_KERNEL_INSTANTIATIONS=ON -DKokkos_ARCH_VEGA90A=ON -DIdefix_MPI=ON"
+export IDEFIX_FLAGS="-DKokkos_ENABLE_HIP=ON -DKokkos_ENABLE_HIP_MULTIPLE_KERNEL_INSTANTIATIONS=ON -DKokkos_ARCH_AMD_GFX90A=ON -DIdefix_MPI=ON"

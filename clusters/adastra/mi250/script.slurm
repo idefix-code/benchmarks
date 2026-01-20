@@ -27,4 +27,4 @@ set -x
 
 # execution du code
 
-srun ./idefix
+srun --ntasks-per-node=@core@ --cpus-per-task=8 --threads-per-core=1 --gpu-bind=closest -- ./idefix
