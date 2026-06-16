@@ -102,7 +102,7 @@ for ncores in coreList:
         inifile = file.read()
 
     for key, val in inputOptions.items():
-        inifile = re.sub(r'@{0}@'.format(key), val, inifile)
+        inifile = re.sub(f'@{key}@', val, inifile)
 
     with open(targetDir+"/idefix.ini",'w') as file:
         file.write(inifile)
@@ -119,7 +119,8 @@ for ncores in coreList:
         scriptfile = file.read()
 
     for key, val in scriptOptions.items():
-        scriptfile = re.sub(r'@{0}@'.format(key), val, scriptfile)
+        print(key)
+        scriptfile = re.sub(f'@{key}@', val, scriptfile)
 
     with open(targetDir+"/script.slurm",'w') as file:
         file.write(scriptfile)
@@ -127,5 +128,6 @@ for ncores in coreList:
     os.chmod(targetDir+"/script.slurm",stat.S_IRWXU)
     cwd = os.getcwd()
     os.chdir(targetDir)
-    os.system('sbatch ./script.slurm')
+    #os.system('sbatch ./script.slurm')
+    os.system('oarsub -S ./script.slurm')
     os.chdir(cwd)
