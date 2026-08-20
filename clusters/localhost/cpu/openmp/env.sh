@@ -1,0 +1,1 @@
+export IDEFIX_FLAGS="-DKokkos_ENABLE_OPENMP=ON"

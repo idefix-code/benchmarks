@@ -14,6 +14,83 @@ These tests were written for Idefix v1.1
 This directory contains scripts used to evaluate the single-process perfomance (frag_tests) as well as weak scaling tests for the lagrangian particles module.
 These tests were written for Idefix v2.0 with Clément Robert's particle module (unreleased at the time of writing).
 
+### scripts/bench.py
+
+A complete python script to :
+
+1. Build Idefix for the cluster (Sub-command **build**).
+2. Generate the job files for the given cluster (Sub-command **gen**).
+3. Launching the jobs (Sub-command **run**).
+4. Extracting the scalability results and plotting (Sub-command **extract**).
+
+In order to proceed, you need to first **download** and **compile** *Idefix*. You can either do it by hand or use the **build** sub-command of the script :
+
+    ./scripts/bench.py --cluster <CLUSTER> --commit <GIT-COMMIT> build
+
+Then you need to **generate** the job directory and files :
+
+    ./scripts/bench.py --cluster <CLUSTER> --commit <GIT-COMMIT> \
+        --account <ACCOUNT> --max-cores <MAX-CORES> --cores-per-node <CORES-PER-NODE>\
+        --problem-size <PROBLEM-SIZE> \
+        gen
+
+Note that when running on **GPUs**, the `core` options correspond to the number of GPUs and not cores.
+
+Check that the jobs are created the right way, then launch them by calling :
+
+    ./scripts/bench.py --cluster <CLUSTER> --commit <GIT-COMMIT> \
+        --account <ACCOUNT> --max-cores <MAX-CORES> --cores-per-node <CORES-PER-NODE> \
+        --problem-size <PROBLEM-SIZE> \
+        run
+
+You can then finally parse the logs to extract the perf and get some report files as output :
+
+    ./scripts/bench.py --cluster <CLUSTER> --commit <GIT-COMMIT> \
+        --account <ACCOUNT> --max-cores <MAX-CORES> --cores-per-node <CORES-PER-NODE> \
+        --problem-size <PROBLEM-SIZE> \
+        extract
+
+It will produce :
+
+ - `runs/<COMMIT>/<CLUSTER>/<DATE>/<PROBLEM-SIZE>/summary.json`
+ - `runs/<COMMIT>/<CLUSTER>/<DATE>/<PROBLEM-SIZE>/summary.dat`
+ - `runs/<COMMIT>/<CLUSTER>/<DATE>/<PROBLEM-SIZE>/summary.gnuplot`
+ - `runs/<COMMIT>/<CLUSTER>/<DATE>/<PROBLEM-SIZE>/summary.pdf`
+
+For a more concrete example, to use the **H100** of **Kraken**, you can use :
+
+    # compile
+    ./scripts/bench.py --cluster kraken-gpu/h100 --commit master build
+
+    # generate the jobs
+    ./scripts/bench.py --cluster kraken-gpu/h100 --commit master --account <ACCOUNT> \
+        --max-cores 8 --cores-per-node 2 --problem-size 256 \
+        gen
+
+    # submit the jobs to the cluster
+    ./scripts/bench.py --cluster kraken-gpu/h100 --commit master --account <ACCOUNT> \
+        --max-cores 8 --cores-per-node 2 --problem-size 256 \
+        run
+
+    # extract the performance from the logs
+    ./scripts/bench.py --cluster kraken-gpu/h100 --commit master --account <ACCOUNT> \
+        --max-cores 8 --cores-per-node 2 --problem-size 256 \
+        extract
+
+In case you want to build Idefix yourself, use the case in **./OrszagTang3D/setup/** to prepare your build dir and then use the
+`--build-directory` to configure in which directory your **idefix** binary and case files lands.
+
+    ./scripts/bench.py --build-directory ./my_idefix/build/ --cluster kraken-gpu/h100 \
+        --commit master --account <ACCOUNT> --max-cores 8 --cores-per-node 2 \
+        --problem-size 256 \
+        gen
+
+To extract the data from a past date, you can precise the date (following the format `year-month-day`) and force the plotting with gnuplot via `--plot`:
+
+    ./scripts/bench.py --cluster kraken-gpu/h100 --commit master --account <ACCOUNT> \
+        --max-cores 8 --cores-per-node 2 --problem-size 256 \
+        gen --date 2026-06-15 --plot
+
 ### scripts/run-bench
 
 A basic script to facilitate running the benchmark on a specific
