@@ -15,18 +15,18 @@ repos:
   - id: check-executables-have-shebangs
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.14.10
+  rev: v0.15.20
   hooks:
   - id: ruff-check
     args: [--fix]
 
 - repo: https://github.com/neutrinoceros/inifix.git
-  rev: v6.1.1
+  rev: v7.0.1
   hooks:
   - id: inifix-format
 
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.15.0
+  rev: v2.16.0
   hooks:
   - id: pretty-format-yaml
     args: [--autofix, --indent, '2']
